@@ -1,0 +1,1068 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Nunoz Simulation</title>
+  <style>
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      background: #ffffff;
+      font-family: Arial, sans-serif;
+      color: #222;
+    }
+
+    #simulation-app {
+      display: block;
+      font-family: Arial, sans-serif;
+
+      color: #222;
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 40px 20px;
+    }
+
+    #simulation-app .title {
+      font-size: 32px;
+      font-weight: 700;
+      margin-bottom: 10px;
+    }
+
+    #simulation-app .desc {
+      color: #666;
+      margin-bottom: 24px;
+      line-height: 1.6;
+    }
+
+    #simulation-app .layout {
+      display: grid;
+      grid-template-columns: 320px 1fr;
+      gap: 24px;
+    }
+
+    #simulation-app .panel,
+    #simulation-app .viewer-panel {
+      background: #fff;
+      border: 1px solid #eee;
+      border-radius: 18px;
+      padding: 20px;
+    }
+
+    #simulation-app .section-title {
+      font-size: 16px;
+      font-weight: 700;
+      margin-bottom: 12px;
+    }
+
+    #simulation-app .upload-box {
+      display: block;
+      width: 100%;
+      padding: 16px;
+      border: 1px dashed #ccc;
+      border-radius: 12px;
+      background: #fafafa;
+      text-align: center;
+      cursor: pointer;
+    }
+
+    #simulation-app .hint {
+      font-size: 13px;
+      color: #777;
+      margin-top: 10px;
+      line-height: 1.6;
+    }
+
+    #simulation-app .product-list {
+      display: grid;
+      gap: 10px;
+      position: relative;
+      z-index: 10;
+    }
+
+    #simulation-app .product-option {
+      width: 100%;
+      border: 1px solid #e5e5e5;
+      border-radius: 14px;
+      padding: 12px;
+      background: #fff;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      appearance: none;
+      -webkit-appearance: none;
+      text-align: left;
+      position: relative;
+      z-index: 1;
+    }
+
+    #simulation-app .product-option.active {
+      border-color: #111;
+      box-shadow: 0 0 0 1px #111 inset;
+      z-index: 2;
+    }
+
+    #simulation-app .product-option-inner {
+      display: grid;
+      grid-template-columns: 72px 1fr;
+      gap: 12px;
+      align-items: center;
+    }
+
+    #simulation-app .product-option-thumb {
+      width: 72px;
+      height: 72px;
+      border-radius: 10px;
+      background: #f6f6f6;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      flex-shrink: 0;
+    }
+
+    #simulation-app .product-option-thumb img {
+      max-width: 100%;
+      max-height: 100%;
+      object-fit: contain;
+      display: block;
+      pointer-events: none;
+      user-select: none;
+      -webkit-user-drag: none;
+    }
+
+    #simulation-app .product-option-title {
+      font-size: 15px;
+      font-weight: 700;
+      margin-bottom: 4px;
+    }
+
+    #simulation-app .product-option-sub {
+      font-size: 12px;
+      color: #666;
+      line-height: 1.5;
+    }
+
+    #simulation-app .size-section,
+    #simulation-app .ceiling-section,
+    #simulation-app .distance-section {
+      margin-top: 18px;
+    }
+
+    #simulation-app .option-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-top: 10px;
+    }
+
+    #simulation-app .option-grid.option-grid-3 {
+      grid-template-columns: 1fr 1fr 1fr;
+    }
+
+    #simulation-app .size-option {
+      border: 1px solid #e5e5e5;
+      border-radius: 12px;
+      background: #fff;
+      padding: 12px 10px;
+      cursor: pointer;
+      text-align: center;
+      transition: all 0.2s ease;
+      appearance: none;
+      -webkit-appearance: none;
+    }
+
+    #simulation-app .size-option.active {
+      border-color: #111;
+      box-shadow: 0 0 0 1px #111 inset;
+      background: #fafafa;
+    }
+
+    #simulation-app .size-option-title {
+      font-size: 14px;
+      font-weight: 700;
+    }
+
+    #simulation-app .size-option-sub {
+      margin-top: 4px;
+      font-size: 11px;
+      color: #777;
+      line-height: 1.3;
+    }
+
+    #simulation-app .image-error {
+      margin-top: 10px;
+      font-size: 12px;
+      color: #c0392b;
+      display: none;
+    }
+
+    #simulation-app .btn-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-top: 18px;
+    }
+
+    #simulation-app button,
+    #simulation-app .buy-link {
+      border: none;
+      border-radius: 12px;
+      padding: 12px 14px;
+      font-size: 14px;
+      font-weight: 700;
+      cursor: pointer;
+      text-align: center;
+      text-decoration: none;
+    }
+
+    #simulation-app .btn-light {
+      background: #f1f1f1;
+      color: #222;
+    }
+
+    #simulation-app .btn-dark,
+    #simulation-app .buy-link {
+      background: #111;
+      color: #fff;
+    }
+
+    #simulation-app .buy-link {
+      display: block;
+      margin-top: 12px;
+    }
+
+    #simulation-app .viewer-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 14px;
+      flex-wrap: wrap;
+    }
+
+    #simulation-app .viewer-title {
+      font-size: 16px;
+      font-weight: 700;
+    }
+
+    #simulation-app .badge {
+      display: inline-block;
+      padding: 6px 10px;
+      background: #f3f3f3;
+      border-radius: 999px;
+      font-size: 12px;
+      color: #444;
+    }
+
+    #simulation-app .stage-wrap {
+      width: 100%;
+      background: #f3f3f3;
+      border-radius: 16px;
+      overflow: hidden;
+    }
+
+    #simulation-app .stage {
+      position: relative;
+      width: 100%;
+      aspect-ratio: 4 / 3;
+      background: #ddd center center / cover no-repeat;
+      overflow: hidden;
+      user-select: none;
+      touch-action: none;
+    }
+
+    #simulation-app .overlay {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 220px;
+      transform: translate(-50%, -50%);
+      cursor: grab;
+      z-index: 5;
+      display: none;
+    }
+
+    #simulation-app .overlay img {
+      width: 100%;
+      display: block;
+      pointer-events: none;
+      user-select: none;
+      -webkit-user-drag: none;
+      filter: drop-shadow(0 0 18px rgba(255, 244, 214, 0.35));
+    }
+
+    #simulation-app .stage-guide {
+      font-size: 13px;
+      color: #666;
+      margin-top: 12px;
+      line-height: 1.6;
+    }
+
+@media (max-width: 900px) {
+  #simulation-app .layout {
+    grid-template-columns: 1fr;
+  }
+}
+
+
+
+
+@media (min-width: 901px) {
+  #simulation-app .layout {
+    grid-template-columns: 300px 1fr;
+    align-items: start;
+  }
+
+  #simulation-app .panel {
+    position: sticky;
+    top: 20px;
+    align-self: start;
+    max-height: calc(100vh - 40px);
+    overflow-y: auto;
+  }
+
+  #simulation-app .panel,
+  #simulation-app .viewer-panel {
+    padding: 18px;
+  }
+}
+
+@media (max-width: 900px) {
+  #simulation-app {
+    padding: 20px 14px;
+  }
+
+  #simulation-app .title {
+    font-size: 26px;
+    line-height: 1.25;
+  }
+
+  #simulation-app .desc {
+    font-size: 14px;
+    margin-bottom: 16px;
+  }
+
+  #simulation-app .layout {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  #simulation-app .viewer-panel {
+    order: 1;
+  }
+
+  #simulation-app .panel {
+    order: 2;
+  }
+
+  #simulation-app .stage {
+    aspect-ratio: 4 / 3;
+    max-height: 280px;
+  }
+
+  #simulation-app .panel,
+  #simulation-app .viewer-panel {
+    padding: 16px;
+    border-radius: 16px;
+  }
+
+  #simulation-app .product-option-inner {
+    grid-template-columns: 60px 1fr;
+    gap: 10px;
+  }
+
+  #simulation-app .product-option-thumb {
+    width: 60px;
+    height: 60px;
+  }
+
+  #simulation-app .option-grid,
+  #simulation-app .option-grid.option-grid-3 {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  #simulation-app .buy-link,
+  #simulation-app button {
+    min-height: 46px;
+  }
+}
+
+@media (min-width: 901px) {
+  #simulation-app .layout {
+    grid-template-columns: 280px 1fr;
+    align-items: start;
+  }
+
+  #simulation-app .panel {
+    position: sticky;
+    top: 20px;
+    align-self: start;
+    max-height: calc(100vh - 40px);
+    overflow-y: auto;
+  }
+
+  #simulation-app .panel,
+  #simulation-app .viewer-panel {
+    padding: 18px;
+  }
+
+  #simulation-app .section-title {
+    font-size: 15px;
+    margin-bottom: 10px;
+  }
+
+  #simulation-app .product-list {
+    gap: 8px;
+  }
+
+  #simulation-app .product-option {
+    padding: 10px;
+    border-radius: 12px;
+  }
+
+  #simulation-app .product-option-inner {
+    grid-template-columns: 60px 1fr;
+    gap: 10px;
+  }
+
+  #simulation-app .product-option-thumb {
+    width: 60px;
+    height: 60px;
+  }
+
+  #simulation-app .product-option-title {
+    font-size: 14px;
+    margin-bottom: 2px;
+  }
+
+  #simulation-app .product-option-sub {
+    font-size: 11px;
+    line-height: 1.4;
+  }
+
+  #simulation-app .size-section,
+  #simulation-app .ceiling-section,
+  #simulation-app .distance-section {
+    margin-top: 14px;
+  }
+
+  #simulation-app .option-grid,
+  #simulation-app .option-grid.option-grid-3 {
+    gap: 8px;
+    margin-top: 8px;
+  }
+
+  #simulation-app .size-option {
+    padding: 10px 8px;
+    border-radius: 10px;
+  }
+
+  #simulation-app .size-option-title {
+    font-size: 13px;
+  }
+
+  #simulation-app .size-option-sub {
+    margin-top: 3px;
+    font-size: 10px;
+    line-height: 1.2;
+  }
+
+  #simulation-app .btn-row {
+    gap: 8px;
+    margin-top: 14px;
+  }
+
+  #simulation-app button,
+  #simulation-app .buy-link {
+    padding: 11px 12px;
+    font-size: 13px;
+    border-radius: 10px;
+  }
+}
+
+
+  </style>
+</head>
+<body>
+  <div id="simulation-app">
+    <div class="title">우리집에 Paper Lamp 미리 배치해보기</div>
+    <div class="desc">사진을 올리고 원하는 조명, 사이즈, 천장 높이, 사진 거리감을 선택해 위치를 직접 맞춰보세요.</div>
+
+    <div class="layout">
+      <div class="panel">
+        <div class="section-title">1) 집 사진 업로드</div>
+        <label class="upload-box">
+          사진 선택하기
+          <input type="file" id="roomUpload" accept="image/*" style="display:none;" />
+        </label>
+        <div class="hint">천장과 벽이 같이 보이는 사진이 제일 자연스럽게 보여.</div>
+
+        <hr style="border:none; border-top:1px solid #eee; margin:20px 0;" />
+
+        <div class="section-title">2) 조명 선택</div>
+        <div class="product-list" id="productList"></div>
+
+        <div class="size-section">
+          <div class="section-title" style="margin-bottom:0;">3) 사이즈 선택</div>
+          <div class="option-grid" id="sizeGrid"></div>
+        </div>
+
+        <div class="ceiling-section">
+          <div class="section-title" style="margin-bottom:0;">4) 천장 높이</div>
+          <div class="option-grid option-grid-3" id="ceilingGrid"></div>
+        </div>
+
+        <div class="distance-section">
+          <div class="section-title" style="margin-bottom:0;">5) 사진 거리감</div>
+          <div class="option-grid option-grid-3" id="distanceGrid"></div>
+        </div>
+
+        <div class="image-error" id="imageError">조명 PNG 주소가 잘못됐거나 외부 로딩이 막혀 있어요.</div>
+
+        <div class="btn-row">
+          <button class="btn-light" id="resetBtn" type="button">초기화</button>
+          <button class="btn-dark" id="centerBtn" type="button">가운데 정렬</button>
+        </div>
+
+        <a class="buy-link" id="buyBtn" href="#" target="_blank" rel="noopener noreferrer">
+          이 조명 구매하기
+        </a>
+      </div>
+
+      <div class="viewer-panel">
+        <div class="viewer-head">
+          <div class="viewer-title">미리보기</div>
+          <div class="badge" id="selectedLampName">선택된 조명 없음</div>
+        </div>
+
+        <div class="stage-wrap">
+          <div class="stage" id="stage">
+            <div class="overlay" id="overlay">
+              <img id="overlayImg" src="" alt="" draggable="false" />
+            </div>
+          </div>
+        </div>
+
+        <div class="stage-guide">
+          * 조명을 잡아서 천장 쪽으로 옮겨보세요. <br>
+          * 제품, 사이즈, 천장 높이, 사진 거리감을 먼저 고르고 배치 느낌을 볼 수 있어요.<br>
+          * 해당 시뮬레이션은 절대적인 기준이 아니며 무드 및 배치 확인용입니다. <br>
+          * 구매 전 반드시 실측을 진행하셔야 합니다.
+
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    (function () {
+      const standardPng = "https://contents.sixshop.com/uploadedFiles/235914/blogPost/image_1772788081610.png";
+      const elipsePng = "https://contents.sixshop.com/uploadedFiles/235914/blogPost/image_1772788101298.png";
+
+      const standardLink = "https://nunoz.kr/product/2b17deb7-f481-4b49-b6fc-ce3dd20a4a50";
+      const elipseLink = "https://nunoz.kr/product/2b17deb7-f481-4b49-b6fc-ce3dd20a4a50-10";
+
+
+
+const OAT_PNG = "https://contents.sixshop.com/uploadedFiles/235914/blogPost/image_1773024284247.png";
+const OAT_LINK = "여기에 oat 상품 링크";
+
+const Vintage_PNG = "https://contents.sixshop.com/uploadedFiles/235914/blogPost/image_1773024264406.png";
+const Vintage_LINK = "여기에 oat 상품 링크";
+
+
+
+
+
+
+      const ceilingOptions = [
+        { id: "230", label: "2.3m", desc: "오피스텔 / 낮은 천장" },
+        { id: "240", label: "2.4m", desc: "일반 아파트" },
+        { id: "250", label: "2.5m", desc: "신축 아파트" },
+        { id: "270", label: "2.7m", desc: "주택 / 높은 천장" },
+        { id: "300", label: "3.0m", desc: "카페 / 상업공간" }
+      ];
+
+      const distanceOptions = [
+        { id: "close", label: "가깝게", factor: 1.22, desc: "확대 느낌" },
+        { id: "normal", label: "보통", factor: 1.00, desc: "일반 거리" },
+        { id: "far", label: "멀리서", factor: 0.82, desc: "조금 작게" },
+        { id: "wide", label: "넓게", factor: 0.72, desc: "광각 느낌" }
+      ];
+
+      const products = [
+        {
+          id: "standard",
+          name: "Standard",
+          sub: "드래그해서 위치 이동 가능",
+          image: standardPng,
+          link: standardLink,
+          defaultSize: "40cm",
+          sizes: [
+            { id: "30cm", label: "30cm", cm: 30 },
+            { id: "40cm", label: "40cm", cm: 40 },
+            { id: "50cm", label: "50cm", cm: 50 },
+            { id: "60cm", label: "60cm", cm: 60 }
+          ]
+        },
+        {
+           id: "oat",
+          name: "Oat",
+            sub: "드래그해서 위치 이동 가능",
+            image: OAT_PNG,
+            link: OAT_LINK,
+            defaultSize: "50cm",
+            sizes: [
+              { id: "30cm", label: "30cm", cm: 30 },
+              { id: "40cm", label: "40cm", cm: 40 },
+              { id: "50cm", label: "50cm", cm: 50 },
+              { id: "60cm", label: "60cm", cm: 60 }
+                    ]
+        },
+
+
+   {
+           id: "Vintage",
+          name: "Vintage",
+            sub: "드래그해서 위치 이동 가능",
+            image: Vintage_PNG,
+            link: Vintage_LINK,
+            defaultSize: "50cm",
+            sizes: [
+              { id: "30cm", label: "30cm", cm: 30 },
+              { id: "40cm", label: "40cm", cm: 40 },
+              { id: "50cm", label: "50cm", cm: 50 },
+              { id: "60cm", label: "60cm", cm: 60 }
+                    ]
+        },
+
+
+        {
+          id: "elipse",
+          name: "Elipse",
+          sub: "드래그해서 위치 이동 가능",
+          image: elipsePng,
+          link: elipseLink,
+          defaultSize: "50cm",
+          sizes: [
+            { id: "50cm", label: "50cm", cm: 50 },
+            { id: "60cm", label: "60cm", cm: 60 }
+          ]
+        }
+      ];
+
+      const roomUpload = document.getElementById("roomUpload");
+      const stage = document.getElementById("stage");
+      const overlay = document.getElementById("overlay");
+      const overlayImg = document.getElementById("overlayImg");
+      const productList = document.getElementById("productList");
+      const sizeGrid = document.getElementById("sizeGrid");
+      const ceilingGrid = document.getElementById("ceilingGrid");
+      const distanceGrid = document.getElementById("distanceGrid");
+      const imageError = document.getElementById("imageError");
+      const selectedLampName = document.getElementById("selectedLampName");
+      const buyBtn = document.getElementById("buyBtn");
+      const resetBtn = document.getElementById("resetBtn");
+      const centerBtn = document.getElementById("centerBtn");
+
+      let currentProduct = null;
+      let currentSize = null;
+      let currentCeiling = 240;
+      let currentDistance = "normal";
+
+      let state = {
+        x: 50,
+        y: 50,
+        width: 220
+      };
+
+      function applyOverlayStyle() {
+        overlay.style.left = state.x + "%";
+        overlay.style.top = state.y + "%";
+        overlay.style.width = state.width + "px";
+        overlay.style.transform = "translate(-50%, -50%)";
+      }
+
+      function renderProductList() {
+        productList.innerHTML = "";
+
+        products.forEach(function(product) {
+          const button = document.createElement("button");
+          button.type = "button";
+          button.className = "product-option";
+          button.dataset.id = product.id;
+
+          button.innerHTML = `
+            <div class="product-option-inner">
+              <div class="product-option-thumb">
+                <img src="${product.image}" alt="${product.name}">
+              </div>
+              <div>
+                <div class="product-option-title">${product.name}</div>
+                <div class="product-option-sub">${product.sub}</div>
+              </div>
+            </div>
+          `;
+
+          button.addEventListener("click", function(e) {
+            e.preventDefault();
+            selectProduct(product.id);
+          });
+
+          const thumbImg = button.querySelector("img");
+          thumbImg.addEventListener("error", function() {
+            thumbImg.style.display = "none";
+          });
+
+          productList.appendChild(button);
+        });
+      }
+
+      function renderSizeOptions(product) {
+        sizeGrid.innerHTML = "";
+
+        product.sizes.forEach(function(size) {
+          const button = document.createElement("button");
+          button.type = "button";
+          button.className = "size-option";
+          button.dataset.sizeId = size.id;
+
+          button.innerHTML = `
+            <div class="size-option-title">${size.label}</div>
+            <div class="size-option-sub">${product.name}</div>
+          `;
+
+          button.addEventListener("click", function(e) {
+            e.preventDefault();
+            selectSize(size.id);
+          });
+
+          sizeGrid.appendChild(button);
+        });
+      }
+
+      function renderCeilingOptions() {
+        ceilingGrid.innerHTML = "";
+
+        ceilingOptions.forEach(function(item) {
+          const button = document.createElement("button");
+          button.type = "button";
+          button.className = "size-option";
+          button.dataset.height = item.id;
+
+          button.innerHTML = `
+            <div class="size-option-title">${item.label}</div>
+            <div class="size-option-sub">(${item.desc})</div>
+          `;
+
+          button.addEventListener("click", function(e) {
+            e.preventDefault();
+            selectCeiling(item.id);
+          });
+
+          ceilingGrid.appendChild(button);
+        });
+      }
+
+      function renderDistanceOptions() {
+        distanceGrid.innerHTML = "";
+
+        distanceOptions.forEach(function(item) {
+          const button = document.createElement("button");
+          button.type = "button";
+          button.className = "size-option";
+          button.dataset.distance = item.id;
+
+          button.innerHTML = `
+            <div class="size-option-title">${item.label}</div>
+            <div class="size-option-sub">${item.desc}</div>
+          `;
+
+          button.addEventListener("click", function(e) {
+            e.preventDefault();
+            selectDistance(item.id);
+          });
+
+          distanceGrid.appendChild(button);
+        });
+      }
+
+      function selectProduct(productId) {
+        const found = products.find(function(item) {
+          return item.id === productId;
+        });
+
+        if (!found) return;
+
+        currentProduct = found;
+
+        document.querySelectorAll("#simulation-app .product-option").forEach(function(el) {
+          el.classList.toggle("active", el.dataset.id === productId);
+        });
+
+        selectedLampName.textContent = found.name;
+        overlay.style.display = "none";
+        imageError.style.display = "none";
+        overlayImg.src = found.image;
+
+        renderSizeOptions(found);
+        selectSize(found.defaultSize);
+        updateBuyLink();
+      }
+
+      function selectSize(sizeId) {
+        if (!currentProduct) return;
+
+        const foundSize = currentProduct.sizes.find(function(item) {
+          return item.id === sizeId;
+        });
+
+        if (!foundSize) return;
+
+        currentSize = foundSize;
+
+        document.querySelectorAll("#simulation-app #sizeGrid .size-option").forEach(function(el) {
+          el.classList.toggle("active", el.dataset.sizeId === sizeId);
+        });
+
+        updateLampSize();
+        updateBadge();
+        updateBuyLink();
+      }
+
+      function selectCeiling(heightId) {
+        currentCeiling = parseInt(heightId, 10);
+
+        document.querySelectorAll("#simulation-app #ceilingGrid .size-option").forEach(function(el) {
+          el.classList.toggle("active", el.dataset.height === String(heightId));
+        });
+
+        updateLampSize();
+        updateBadge();
+      }
+
+      function selectDistance(distanceId) {
+        currentDistance = distanceId;
+
+        document.querySelectorAll("#simulation-app #distanceGrid .size-option").forEach(function(el) {
+          el.classList.toggle("active", el.dataset.distance === distanceId);
+        });
+
+        updateLampSize();
+        updateBadge();
+      }
+
+      function getDistanceFactor() {
+        const found = distanceOptions.find(function(item) {
+          return item.id === currentDistance;
+        });
+        return found ? found.factor : 1;
+      }
+
+      function updateLampSize() {
+        if (!currentProduct || !currentSize) return;
+
+        let basePx = 180;
+
+        if (currentProduct.id === "standard") {
+          if (currentSize.id === "30cm") basePx = 150;
+          if (currentSize.id === "40cm") basePx = 190;
+          if (currentSize.id === "50cm") basePx = 235;
+          if (currentSize.id === "60cm") basePx = 280;
+        }
+
+        if (currentProduct.id === "elipse") {
+          if (currentSize.id === "50cm") basePx = 250;
+          if (currentSize.id === "60cm") basePx = 305;
+        }
+
+
+        if (currentProduct.id === "oat") {
+  if (currentSize.id === "30cm") basePx = 150;
+  if (currentSize.id === "40cm") basePx = 190;
+  if (currentSize.id === "50cm") basePx = 235;
+  if (currentSize.id === "60cm") basePx = 280;
+}
+
+if (currentProduct.id === "Vintage") {
+  if (currentSize.id === "30cm") basePx = 150;
+  if (currentSize.id === "40cm") basePx = 190;
+  if (currentSize.id === "50cm") basePx = 235;
+  if (currentSize.id === "60cm") basePx = 280;
+}
+
+
+        const ceilingFactorMap = {
+          230: 1.14,
+          240: 1.08,
+          250: 1.00,
+          270: 0.90,
+          300: 0.80
+        };
+
+        const ceilingFactor = ceilingFactorMap[currentCeiling] || 1.0;
+        const distanceFactor = getDistanceFactor();
+
+
+
+
+
+
+
+
+let finalPx = basePx * ceilingFactor * distanceFactor;
+
+const isMobile = window.innerWidth <= 900;
+const mobileScale = isMobile ? 0.68 : 1;
+
+finalPx = finalPx * mobileScale;
+finalPx = Math.max(80, Math.min(430, finalPx));
+
+
+
+
+
+
+
+
+        state.width = finalPx;
+        applyOverlayStyle();
+      }
+
+      function updateBadge() {
+        if (!currentProduct) {
+          selectedLampName.textContent = "선택된 조명 없음";
+          return;
+        }
+
+        const productName = currentProduct.name;
+        const sizeLabel = currentSize ? currentSize.label : "";
+        const ceilingLabel = (currentCeiling / 100).toFixed(1) + "m";
+
+        let distanceLabel = "보통";
+        const foundDistance = distanceOptions.find(function(item) {
+          return item.id === currentDistance;
+        });
+        if (foundDistance) distanceLabel = foundDistance.label;
+
+        if (sizeLabel) {
+          selectedLampName.textContent = productName + " / " + sizeLabel + " / " + ceilingLabel + " / " + distanceLabel;
+        } else {
+          selectedLampName.textContent = productName + " / " + ceilingLabel + " / " + distanceLabel;
+        }
+      }
+
+      function updateBuyLink() {
+        if (!currentProduct) {
+          buyBtn.href = "#";
+          return;
+        }
+
+        buyBtn.href = currentProduct.link;
+      }
+
+      function handleOverlayLoad() {
+        imageError.style.display = "none";
+        overlay.style.display = "block";
+        updateLampSize();
+      }
+
+      function handleOverlayError() {
+        overlay.style.display = "none";
+        imageError.style.display = "block";
+      }
+
+      overlayImg.addEventListener("load", handleOverlayLoad);
+      overlayImg.addEventListener("error", handleOverlayError);
+
+      roomUpload.addEventListener("change", function (e) {
+        const file = e.target.files && e.target.files[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onload = function (event) {
+          stage.style.backgroundImage = "url('" + event.target.result + "')";
+        };
+        reader.readAsDataURL(file);
+      });
+
+      resetBtn.addEventListener("click", function () {
+        state.x = 50;
+        state.y = 50;
+        updateLampSize();
+      });
+
+      centerBtn.addEventListener("click", function () {
+        state.x = 50;
+        state.y = 50;
+        applyOverlayStyle();
+      });
+
+      let isDragging = false;
+
+      function startDrag(clientX, clientY) {
+        if (overlay.style.display === "none") return;
+        isDragging = true;
+        moveOverlay(clientX, clientY);
+        overlay.style.cursor = "grabbing";
+      }
+
+      function stopDrag() {
+        isDragging = false;
+        overlay.style.cursor = "grab";
+      }
+
+      function moveOverlay(clientX, clientY) {
+        const rect = stage.getBoundingClientRect();
+        let x = ((clientX - rect.left) / rect.width) * 100;
+        let y = ((clientY - rect.top) / rect.height) * 100;
+
+        x = Math.max(0, Math.min(100, x));
+        y = Math.max(0, Math.min(100, y));
+
+        state.x = x;
+        state.y = y;
+        applyOverlayStyle();
+      }
+
+      overlay.addEventListener("mousedown", function (e) {
+        e.preventDefault();
+        startDrag(e.clientX, e.clientY);
+      });
+
+      window.addEventListener("mousemove", function (e) {
+        if (!isDragging) return;
+        moveOverlay(e.clientX, e.clientY);
+      });
+
+      window.addEventListener("mouseup", stopDrag);
+
+      overlay.addEventListener("touchstart", function (e) {
+        if (!e.touches[0]) return;
+        startDrag(e.touches[0].clientX, e.touches[0].clientY);
+      }, { passive: true });
+
+      window.addEventListener("touchmove", function (e) {
+        if (!isDragging || !e.touches[0]) return;
+        moveOverlay(e.touches[0].clientX, e.touches[0].clientY);
+      }, { passive: true });
+
+      window.addEventListener("touchend", stopDrag);
+
+      window.addEventListener("resize", function() {
+        updateLampSize();
+      });
+
+      renderProductList();
+      renderCeilingOptions();
+      renderDistanceOptions();
+      selectCeiling("240");
+      selectDistance("normal");
+      applyOverlayStyle();
+      selectProduct("standard");
+    })();
+  </script>
+</body>
+</html>
