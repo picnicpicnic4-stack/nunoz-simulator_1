@@ -954,11 +954,20 @@ finalPx = Math.max(80, Math.min(430, finalPx));
         }
       }
 
-      function updateBuyLink() {
-        if (!currentProduct) {
-          buyBtn.href = "#";
-          return;
-        }
+
+
+     function updateBuyLink() {
+  if (!currentProduct || !currentSize) {
+    buyBtn.href = "#";
+    return;
+  }
+
+  const encodedSize = encodeURIComponent(currentSize.id);
+  buyBtn.href = currentProduct.link + "?size=" + encodedSize;
+}
+
+
+      
 
         buyBtn.href = currentProduct.link;
       }
